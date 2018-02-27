@@ -294,3 +294,141 @@ class MeasureRequestScale_16KB_32(MeasureRequestScaleBaseClass):
             n_outstanding_requests=32,
             workload_conf_key=None
         )
+
+############################################
+## Test Aligned Sequentiality
+############################################
+
+# The SSD being simulated has pages of size 2KB. We simulate the SSD for
+# two different block sizes: 128 KB (64 pages), and 1 MB (512 pages).
+#
+# We want to write a file of size 2 MB. We vary the extent of unalignment while
+# writing to SSD blocks, and make a note of how the number of
+# pages moved for merging SSD blocks change with it. With increasing unaligned
+# block writes, we expect the number of pages moved to go up.
+
+class RandomWrite(Workload):
+    def __init__(self, confobj, workload_conf_key=None):
+        super(RandomWrite, self).__init__(confobj, workload_conf_key)
+
+    def run(self):
+        mnt = self.conf['fs_mount_point']
+        datafile = os.path.join(mnt, "workload_alignment_temp_{}")
+        page_size = 2*KB
+        file_size = 4*MB
+        n_pages = file_size/page_size
+
+        buf = "a"*page_size
+        write_order = range(n_pages)
+
+        # Write two files of size 2*MB each randomly
+        for file_id in range(2):
+            datafile = datafile.format(file_id)
+            f = open(datafile, "w+")
+            random.shuffle(write_order)
+            for i in write_order:
+                offset = i*page_size
+                f.seek(offset)
+                f.write(buf)
+                os.fsync(f)
+
+class MeasureAlignmentBaseClass(Workload):
+    def __init__(
+        self,
+        confobj,
+        aligned_ratio,
+        workload_conf_key=None,
+    ):
+        """
+            aligned_ratio : The ratio of blocks with aligned writes
+        """
+        self.aligned_ratio = aligned_ratio
+        super(MeasureAlignmentBaseClass, self).__init__(
+            confobj, workload_conf_key
+        )
+
+    def run(self):
+        n_pages_per_block = self.conf['flash_config']['n_pages_per_block']
+        page_size = self.conf['flash_config']['page_size'] # Is 2KB always
+        block_size = n_pages_per_block * page_size
+
+        file_size = 2 * MB
+        n_blocks = file_size/block_size
+
+        # Randomly select the blocks with aligned writes
+        n_aligned_blocks = int(self.aligned_ratio * n_blocks)
+        aligned_block_ids = range(n_blocks)
+        random.shuffle(aligned_block_ids)
+        aligned_block_ids = aligned_block_ids[0:n_aligned_blocks]
+
+        # Create a random order of page writes for writing to unaligned blocks
+        random_page_order = range(n_pages_per_block)
+        random.shuffle(random_page_order)
+
+        mnt = self.conf["fs_mount_point"]
+        datafile = os.path.join(mnt, "workload_alignment")
+        buf = "a" * page_size
+        f = open(datafile, "w+")
+
+        for i in range(n_blocks):
+            if i in aligned_block_ids:
+                # Write pages sequentially
+                page_order = range(n_pages_per_block)
+            else:
+                # Write pages randomly
+                page_order = random_page_order
+
+            for j in page_order:
+                offset = i*block_size + j*page_size
+                f.seek(offset)
+                f.write(buf)
+                os.fsync(f)
+
+# Note: Class name MeasureAlignment_{n} means n% of the block writes are aligned
+class MeasureAlignment_0(MeasureAlignmentBaseClass):
+    def __init__(self, confobj, workload_conf_key=None):
+        super(MeasureAlignment_0, self).__init__(
+            confobj=confobj,
+            aligned_ratio=0,
+            workload_conf_key=workload_conf_key,
+        )
+
+class MeasureAlignment_20(MeasureAlignmentBaseClass):
+    def __init__(self, confobj, workload_conf_key=None):
+        super(MeasureAlignment_20, self).__init__(
+            confobj=confobj,
+            aligned_ratio=0.2,
+            workload_conf_key=workload_conf_key,
+        )
+
+class MeasureAlignment_40(MeasureAlignmentBaseClass):
+    def __init__(self, confobj, workload_conf_key=None):
+        super(MeasureAlignment_40, self).__init__(
+            confobj=confobj,
+            aligned_ratio=0.4,
+            workload_conf_key=workload_conf_key,
+        )
+
+class MeasureAlignment_60(MeasureAlignmentBaseClass):
+    def __init__(self, confobj, workload_conf_key=None):
+        super(MeasureAlignment_60, self).__init__(
+            confobj=confobj,
+            aligned_ratio=0.6,
+            workload_conf_key=workload_conf_key,
+        )
+
+class MeasureAlignment_80(MeasureAlignmentBaseClass):
+    def __init__(self, confobj, workload_conf_key=None):
+        super(MeasureAlignment_80, self).__init__(
+            confobj=confobj,
+            aligned_ratio=0.8,
+            workload_conf_key=workload_conf_key,
+        )
+
+class MeasureAlignment_100(MeasureAlignmentBaseClass):
+    def __init__(self, confobj, workload_conf_key=None):
+        super(MeasureAlignment_100, self).__init__(
+            confobj=confobj,
+            aligned_ratio=1,
+            workload_conf_key=workload_conf_key,
+        )

@@ -597,5 +597,206 @@ class TestRequestScale_16KB_32(unittest.TestCase):
         obj = LocalExperiment(Parameters(**para))
         obj.main()
 
+############################################
+## Test Aligned Sequentiality
+############################################
+
+# The SSD being simulated has pages of size 2KB. We simulate the SSD for
+# two different block sizes: 128 KB (64 pages), and 1 MB (512 pages).
+#
+# We want to write a file of size 2 MB. We vary the extent of unalignment while
+# writing to SSD blocks, and make a note of how the number of
+# pages moved for merging SSD blocks change with it. With increasing unaligned
+# block writes, we expect the number of pages moved to go up.
+
+# Note: Class name TestAlignment_{n} means n% of the block writes are aligned
+
+class TestAlignmentGenerateTraces_0(unittest.TestCase):
+    def test_run(self):
+        class LocalExperiment(experiment.Experiment):
+            def setup_workload(self):
+                self.conf['workload_class'] = "MeasureAlignment_0"
+
+        para = experiment.get_shared_nolist_para_dict(
+            expname="test_alignment_0_traces",
+            lbabytes=16*MB
+        )
+        para.update({
+            "device_path": "/dev/sdc1",
+            "ftl": "ftlcounter",
+            "enable_simulation": True,
+            "dump_ext4_after_workload": True,
+            "only_get_traffic": False,
+            "trace_issue_and_complete": True,
+        })
+        Parameters = collections.namedtuple("Parameters", ','.join(para.keys()))
+        obj = LocalExperiment(Parameters(**para))
+        obj.main()
+
+class TestAlignment_0(unittest.TestCase):
+    def test(self):
+        for para in rule_parameter.ParaDict(
+                expname='test_alignment_0',
+                trace_expnames=['test_alignment_0_traces'],
+                rule='alignment',
+            ):
+            experiment.execute_simulation(para)
+
+class TestAlignmentGenerateTraces_20(unittest.TestCase):
+    def test_run(self):
+        class LocalExperiment(experiment.Experiment):
+            def setup_workload(self):
+                self.conf['workload_class'] = "MeasureAlignment_20"
+
+        para = experiment.get_shared_nolist_para_dict(
+            expname="test_alignment_20_traces",
+            lbabytes=16*MB
+        )
+        para.update({
+            "device_path": "/dev/sdc1",
+            "ftl": "ftlcounter",
+            "enable_simulation": True,
+            "dump_ext4_after_workload": True,
+            "only_get_traffic": False,
+            "trace_issue_and_complete": True,
+        })
+        Parameters = collections.namedtuple("Parameters", ','.join(para.keys()))
+        obj = LocalExperiment(Parameters(**para))
+        obj.main()
+
+class TestAlignment_20(unittest.TestCase):
+    def test(self):
+        for para in rule_parameter.ParaDict(
+                expname='test_alignment_20',
+                trace_expnames=['test_alignment_20_traces'],
+                rule='alignment',
+            ):
+            experiment.execute_simulation(para)
+
+class TestAlignmentGenerateTraces_40(unittest.TestCase):
+    def test_run(self):
+        class LocalExperiment(experiment.Experiment):
+            def setup_workload(self):
+                self.conf['workload_class'] = "MeasureAlignment_40"
+
+        para = experiment.get_shared_nolist_para_dict(
+            expname="test_alignment_40_traces",
+            lbabytes=16*MB
+        )
+        para.update({
+            "device_path": "/dev/sdc1",
+            "ftl": "ftlcounter",
+            "enable_simulation": True,
+            "dump_ext4_after_workload": True,
+            "only_get_traffic": False,
+            "trace_issue_and_complete": True,
+        })
+        Parameters = collections.namedtuple("Parameters", ','.join(para.keys()))
+        obj = LocalExperiment(Parameters(**para))
+        obj.main()
+
+class TestAlignment_40(unittest.TestCase):
+    def test(self):
+        for para in rule_parameter.ParaDict(
+                expname='test_alignment_40',
+                trace_expnames=['test_alignment_40_traces'],
+                rule='alignment',
+            ):
+            experiment.execute_simulation(para)
+
+class TestAlignmentGenerateTraces_60(unittest.TestCase):
+    def test_run(self):
+        class LocalExperiment(experiment.Experiment):
+            def setup_workload(self):
+                self.conf['workload_class'] = "MeasureAlignment_60"
+
+        para = experiment.get_shared_nolist_para_dict(
+            expname="test_alignment_60_traces",
+            lbabytes=16*MB
+        )
+        para.update({
+            "device_path": "/dev/sdc1",
+            "ftl": "ftlcounter",
+            "enable_simulation": True,
+            "dump_ext4_after_workload": True,
+            "only_get_traffic": False,
+            "trace_issue_and_complete": True,
+        })
+        Parameters = collections.namedtuple("Parameters", ','.join(para.keys()))
+        obj = LocalExperiment(Parameters(**para))
+        obj.main()
+
+class TestAlignment_60(unittest.TestCase):
+    def test(self):
+        for para in rule_parameter.ParaDict(
+                expname='test_alignment_60',
+                trace_expnames=['test_alignment_60_traces'],
+                rule='alignment',
+            ):
+            experiment.execute_simulation(para)
+
+class TestAlignmentGenerateTraces_80(unittest.TestCase):
+    def test_run(self):
+        class LocalExperiment(experiment.Experiment):
+            def setup_workload(self):
+                self.conf['workload_class'] = "MeasureAlignment_80"
+
+        para = experiment.get_shared_nolist_para_dict(
+            expname="test_alignment_80_traces",
+            lbabytes=16*MB
+        )
+        para.update({
+            "device_path": "/dev/sdc1",
+            "ftl": "ftlcounter",
+            "enable_simulation": True,
+            "dump_ext4_after_workload": True,
+            "only_get_traffic": False,
+            "trace_issue_and_complete": True,
+        })
+        Parameters = collections.namedtuple("Parameters", ','.join(para.keys()))
+        obj = LocalExperiment(Parameters(**para))
+        obj.main()
+
+class TestAlignment_80(unittest.TestCase):
+    def test(self):
+        for para in rule_parameter.ParaDict(
+                expname='test_alignment_80',
+                trace_expnames=['test_alignment_80_traces'],
+                rule='alignment',
+            ):
+            experiment.execute_simulation(para)
+
+class TestAlignmentGenerateTraces_100(unittest.TestCase):
+    def test_run(self):
+        class LocalExperiment(experiment.Experiment):
+            def setup_workload(self):
+                self.conf['age_workload_class'] = "RandomWrite"
+                self.conf['workload_class'] = "MeasureAlignment_100"
+
+        para = experiment.get_shared_nolist_para_dict(
+            expname="test_alignment_100_traces",
+            lbabytes=16*MB
+        )
+        para.update({
+            "device_path": "/dev/sdc1",
+            "ftl": "ftlcounter",
+            "enable_simulation": True,
+            "dump_ext4_after_workload": True,
+            "only_get_traffic": False,
+            "trace_issue_and_complete": True,
+        })
+        Parameters = collections.namedtuple("Parameters", ','.join(para.keys()))
+        obj = LocalExperiment(Parameters(**para))
+        obj.main()
+
+class TestAlignment_100(unittest.TestCase):
+    def test(self):
+        for para in rule_parameter.ParaDict(
+                expname='test_alignment_100',
+                trace_expnames=['test_alignment_100_traces'],
+                rule='alignment',
+            ):
+            experiment.execute_simulation(para)
+
 if __name__ == '__main__':
     unittest.main()
