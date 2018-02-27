@@ -237,7 +237,366 @@ class TestUniformDataLifetime(unittest.TestCase):
         # obj = LocalExperiment( Parameters(**para) )
         # obj.main()
 
+############################################
+## Test Request Scale
+############################################
+
+# We want to write a 2MB file in different chunk sizes, issuing different number
+# of multiple concurrent requests. We want to examine the completion time for
+# each of the workloads. We also make note of the NCQ depth achieved by the
+# different workloads.
+#
+# NOTE: All experiments for request scale run on /dev/sdc2
+
+# NOTE: Class name TestRequestScaleSequentialWrites_{n}KB_{m}, means chunksize
+# is 'n' KB, and n_outstanding_requests are 'm'
+# The maximum number of n_outstanding_requests supported by the SSD is 32
+
+class TestRequestScaleSequentialWrites_2KB_8(unittest.TestCase):
+    def test_run(self):
+        # Define local experiment class
+        class LocalExperiment(experiment.Experiment):
+            def setup_workload(self):
+                self.conf["workload_class"] = "SequentialWrite_2KB_8"
+
+        para = experiment.get_shared_nolist_para_dict(
+            expname="test_request_scale_seqwrite_2KB_8",
+            lbabytes=1024*MB
+        )
+        para.update({
+            "device_path": "/dev/sdc2",
+            "ftl": "ftlcounter",
+            "enable_simulation": True,
+            "dump_ext4_after_workload": True,
+            "only_get_traffic": False,
+            "trace_issue_and_complete": True
+        })
+        Parameters = collections.namedtuple("Parameters", ','.join(para.keys()))
+        obj = LocalExperiment(Parameters(**para))
+        obj.main()
+
+class TestRequestScaleSequentialWrites_2KB_16(unittest.TestCase):
+    def test_run(self):
+        # Define local experiment class
+        class LocalExperiment(experiment.Experiment):
+            def setup_workload(self):
+                self.conf["workload_class"] = "SequentialWrite_2KB_16"
+
+        para = experiment.get_shared_nolist_para_dict(
+            expname="test_request_scale_seqwrite_2KB_16",
+            lbabytes=1024*MB,
+        )
+        para.update({
+            "device_path": "/dev/sdc2",
+            "ftl": "ftlcounter",
+            "enable_simulation": True,
+            "dump_ext4_after_workload": True,
+            "only_get_traffic": False,
+            "trace_issue_and_complete": True
+        })
+        Parameters = collections.namedtuple("Parameters", ','.join(para.keys()))
+        obj = LocalExperiment(Parameters(**para))
+        obj.main()
+
+class TestRequestScaleSequentialWrites_2KB_32(unittest.TestCase):
+    def test_run(self):
+        # Define local experiment class
+        class LocalExperiment(experiment.Experiment):
+            def setup_workload(self):
+                self.conf["workload_class"] = "SequentialWrite_2KB_32"
+
+        para = experiment.get_shared_nolist_para_dict(
+            expname="test_request_scale_seqwrite_2KB_32",
+            lbabytes=1024*MB,
+        )
+        para.update({
+            "device_path": "/dev/sdc2",
+            "ftl": "ftlcounter",
+            "enable_simulation": True,
+            "dump_ext4_after_workload": True,
+            "only_get_traffic": False,
+            "trace_issue_and_complete": True
+        })
+        Parameters = collections.namedtuple("Parameters", ','.join(para.keys()))
+        obj = LocalExperiment(Parameters(**para))
+        obj.main()
+
+class TestRequestScaleSequentialWrites_4KB_4(unittest.TestCase):
+    def test_run(self):
+        # Define local experiment class
+        class LocalExperiment(experiment.Experiment):
+            def setup_workload(self):
+                self.conf["workload_class"] = "SequentialWrite_4KB_4"
+
+        para = experiment.get_shared_nolist_para_dict(
+            expname="test_request_scale_seqwrite_4KB_4",
+            lbabytes=1024*MB
+        )
+        para.update({
+            "device_path": "/dev/sdc2",
+            "ftl": "ftlcounter",
+            "enable_simulation": True,
+            "dump_ext4_after_workload": True,
+            "only_get_traffic": False,
+            "trace_issue_and_complete": True,
+        })
+        Parameters = collections.namedtuple("Parameters", ','.join(para.keys()))
+        obj = LocalExperiment(Parameters(**para))
+        obj.main()
+
+class TestRequestScaleSequentialWrites_4KB_8(unittest.TestCase):
+    def test_run(self):
+        # Define local experiment class
+        class LocalExperiment(experiment.Experiment):
+            def setup_workload(self):
+                self.conf["workload_class"] = "SequentialWrite_4KB_8"
+
+        para = experiment.get_shared_nolist_para_dict(
+            expname="test_request_scale_seqwrite_4KB_8",
+            lbabytes=1024*MB
+        )
+        para.update({
+            "device_path": "/dev/sdc2",
+            "ftl": "ftlcounter",
+            "enable_simulation": True,
+            "dump_ext4_after_workload": True,
+            "only_get_traffic": False,
+            "trace_issue_and_complete": True,
+        })
+        Parameters = collections.namedtuple("Parameters", ','.join(para.keys()))
+        obj = LocalExperiment(Parameters(**para))
+        obj.main()
+
+class TestRequestScaleSequentialWrites_4KB_16(unittest.TestCase):
+    def test_run(self):
+        # Define local experiment class
+        class LocalExperiment(experiment.Experiment):
+            def setup_workload(self):
+                self.conf["workload_class"] = "SequentialWrite_4KB_16"
+
+        para = experiment.get_shared_nolist_para_dict(
+            expname="test_request_scale_seqwrite_4KB_16",
+            lbabytes=1024*MB
+        )
+        para.update({
+            "device_path": "/dev/sdc2",
+            "ftl": "ftlcounter",
+            "enable_simulation": True,
+            "dump_ext4_after_workload": True,
+            "only_get_traffic": False,
+            "trace_issue_and_complete": True,
+        })
+        Parameters = collections.namedtuple("Parameters", ','.join(para.keys()))
+        obj = LocalExperiment(Parameters(**para))
+        obj.main()
+
+class TestRequestScaleSequentialWrites_4KB_32(unittest.TestCase):
+    def test_run(self):
+        # Define local experiment class
+        class LocalExperiment(experiment.Experiment):
+            def setup_workload(self):
+                self.conf["workload_class"] = "SequentialWrite_4KB_32"
+
+        para = experiment.get_shared_nolist_para_dict(
+            expname="test_request_scale_seqwrite_4KB_32",
+            lbabytes=1024*MB
+        )
+        para.update({
+            "device_path": "/dev/sdc2",
+            "ftl": "ftlcounter",
+            "enable_simulation": True,
+            "dump_ext4_after_workload": True,
+            "only_get_traffic": False,
+            "trace_issue_and_complete": True,
+        })
+        Parameters = collections.namedtuple("Parameters", ','.join(para.keys()))
+        obj = LocalExperiment(Parameters(**para))
+        obj.main()
+
+class TestRequestScaleSequentialWrites_8KB_4(unittest.TestCase):
+    def test_run(self):
+        # Define local experiment class
+        class LocalExperiment(experiment.Experiment):
+            def setup_workload(self):
+                self.conf["workload_class"] = "SequentialWrite_8KB_4"
+
+        para = experiment.get_shared_nolist_para_dict(
+            expname="test_request_scale_seqwrite_8KB_4",
+            lbabytes=1024*MB
+        )
+        para.update({
+            "device_path": "/dev/sdc2",
+            "ftl": "ftlcounter",
+            "enable_simulation": True,
+            "dump_ext4_after_workload": True,
+            "only_get_traffic": False,
+            "trace_issue_and_complete": True,
+        })
+        Parameters = collections.namedtuple("Parameters", ','.join(para.keys()))
+        obj = LocalExperiment(Parameters(**para))
+        obj.main()
+
+class TestRequestScaleSequentialWrites_8KB_8(unittest.TestCase):
+    def test_run(self):
+        # Define local experiment class
+        class LocalExperiment(experiment.Experiment):
+            def setup_workload(self):
+                self.conf["workload_class"] = "SequentialWrite_8KB_8"
+
+        para = experiment.get_shared_nolist_para_dict(
+            expname="test_request_scale_seqwrite_8KB_8",
+            lbabytes=1024*MB
+        )
+        para.update({
+            "device_path": "/dev/sdc2",
+            "ftl": "ftlcounter",
+            "enable_simulation": True,
+            "dump_ext4_after_workload": True,
+            "only_get_traffic": False,
+            "trace_issue_and_complete": True,
+        })
+        Parameters = collections.namedtuple("Parameters", ','.join(para.keys()))
+        obj = LocalExperiment(Parameters(**para))
+        obj.main()
+
+class TestRequestScaleSequentialWrites_8KB_16(unittest.TestCase):
+    def test_run(self):
+        # Define local experiment class
+        class LocalExperiment(experiment.Experiment):
+            def setup_workload(self):
+                self.conf["workload_class"] = "SequentialWrite_8KB_16"
+
+        para = experiment.get_shared_nolist_para_dict(
+            expname="test_request_scale_seqwrite_8KB_16",
+            lbabytes=1024*MB
+        )
+        para.update({
+            "device_path": "/dev/sdc2",
+            "ftl": "ftlcounter",
+            "enable_simulation": True,
+            "dump_ext4_after_workload": True,
+            "only_get_traffic": False,
+            "trace_issue_and_complete": True,
+        })
+        Parameters = collections.namedtuple("Parameters", ','.join(para.keys()))
+        obj = LocalExperiment(Parameters(**para))
+        obj.main()
+
+class TestRequestScaleSequentialWrites_8KB_32(unittest.TestCase):
+    def test_run(self):
+        # Define local experiment class
+        class LocalExperiment(experiment.Experiment):
+            def setup_workload(self):
+                self.conf["workload_class"] = "SequentialWrite_8KB_32"
+
+        para = experiment.get_shared_nolist_para_dict(
+            expname="test_request_scale_seqwrite_8KB_32",
+            lbabytes=1024*MB
+        )
+        para.update({
+            "device_path": "/dev/sdc2",
+            "ftl": "ftlcounter",
+            "enable_simulation": True,
+            "dump_ext4_after_workload": True,
+            "only_get_traffic": False,
+            "trace_issue_and_complete": True,
+        })
+        Parameters = collections.namedtuple("Parameters", ','.join(para.keys()))
+        obj = LocalExperiment(Parameters(**para))
+        obj.main()
+
+class TestRequestScaleSequentialWrites_16KB_4(unittest.TestCase):
+    def test_run(self):
+        # Define local experiment class
+        class LocalExperiment(experiment.Experiment):
+            def setup_workload(self):
+                self.conf["workload_class"] = "SequentialWrite_16KB_4"
+
+        para = experiment.get_shared_nolist_para_dict(
+            expname="test_request_scale_seqwrite_16KB_4",
+            lbabytes=1024*MB
+        )
+        para.update({
+            "device_path": "/dev/sdc2",
+            "ftl": "ftlcounter",
+            "enable_simulation": True,
+            "dump_ext4_after_workload": True,
+            "only_get_traffic": False,
+            "trace_issue_and_complete": True,
+        })
+        Parameters = collections.namedtuple("Parameters", ','.join(para.keys()))
+        obj = LocalExperiment(Parameters(**para))
+        obj.main()
+
+class TestRequestScaleSequentialWrites_16KB_8(unittest.TestCase):
+    def test_run(self):
+        # Define local experiment class
+        class LocalExperiment(experiment.Experiment):
+            def setup_workload(self):
+                self.conf["workload_class"] = "SequentialWrite_16KB_8"
+
+        para = experiment.get_shared_nolist_para_dict(
+            expname="test_request_scale_seqwrite_16KB_8",
+            lbabytes=1024*MB
+        )
+        para.update({
+            "device_path": "/dev/sdc2",
+            "ftl": "ftlcounter",
+            "enable_simulation": True,
+            "dump_ext4_after_workload": True,
+            "only_get_traffic": False,
+            "trace_issue_and_complete": True,
+        })
+        Parameters = collections.namedtuple("Parameters", ','.join(para.keys()))
+        obj = LocalExperiment(Parameters(**para))
+        obj.main()
+
+class TestRequestScaleSequentialWrites_16KB_16(unittest.TestCase):
+    def test_run(self):
+        # Define local experiment class
+        class LocalExperiment(experiment.Experiment):
+            def setup_workload(self):
+                self.conf["workload_class"] = "SequentialWrite_16KB_16"
+
+        para = experiment.get_shared_nolist_para_dict(
+            expname="test_request_scale_seqwrite_16KB_16",
+            lbabytes=1024*MB
+        )
+        para.update({
+            "device_path": "/dev/sdc2",
+            "ftl": "ftlcounter",
+            "enable_simulation": True,
+            "dump_ext4_after_workload": True,
+            "only_get_traffic": False,
+            "trace_issue_and_complete": True,
+        })
+        Parameters = collections.namedtuple("Parameters", ','.join(para.keys()))
+        obj = LocalExperiment(Parameters(**para))
+        obj.main()
+
+class TestRequestScaleSequentialWrites_16KB_32(unittest.TestCase):
+    def test_run(self):
+        # Define local experiment class
+        class LocalExperiment(experiment.Experiment):
+            def setup_workload(self):
+                self.conf["workload_class"] = "SequentialWrite_16KB_32"
+
+        para = experiment.get_shared_nolist_para_dict(
+            expname="test_request_scale_seqwrite_16KB_32",
+            lbabytes=1024*MB
+        )
+        para.update({
+            "device_path": "/dev/sdc2",
+            "ftl": "ftlcounter",
+            "enable_simulation": True,
+            "dump_ext4_after_workload": True,
+            "only_get_traffic": False,
+            "trace_issue_and_complete": True,
+        })
+        Parameters = collections.namedtuple("Parameters", ','.join(para.keys()))
+        obj = LocalExperiment(Parameters(**para))
+        obj.main()
+
 
 if __name__ == '__main__':
     unittest.main()
-

@@ -101,4 +101,194 @@ class SimpleRandReadWrite(Workload):
     # def stop(self):
         # pass
 
+############################################
+## Test Request Scale
+############################################
 
+# We want to write a 2MB file in different chunk sizes, issuing different number
+# of multiple concurrent requests. We want to examine the completion time for
+# each of the workloads. We also make note of the NCQ depth achieved by the
+# different workloads.
+#
+# NOTE: All experiments for request scale run on /dev/sdc2
+# We want the requests to be to non-contiguous regions, to avoid merging of
+# write requests
+
+class SequentialWriteBaseClass(Workload):
+    def __init__(
+        self,
+        confobj,
+        chunksize,
+        n_outstanding_requests,
+        file_size=2*MB,
+        workload_conf_key=None
+    ):
+        self.chunksize = chunksize
+        self.n_outstanding_requests = n_outstanding_requests
+        self.file_size = file_size
+        super(SequentialWriteBaseClass, self).__init__(
+            confobj, workload_conf_key
+        )
+
+    def run(self):
+        mnt = self.conf["fs_mount_point"]
+        chunksize = self.chunksize
+        n_outstanding_requests = self.n_outstanding_requests
+        datafile = os.path.join(
+            mnt, "workload_{}_{}".format(chunksize/KB, n_outstanding_requests)
+        )
+
+        n_chunks = self.file_size/chunksize
+        n_request_groups = \
+            n_chunks / n_outstanding_requests + n_chunks % n_outstanding_requests
+
+        buf = "a" * chunksize
+        f = open(datafile, "w+")
+
+        for i in range(n_request_groups):
+            for j in range(n_outstanding_requests):
+                chunk_id = j*n_request_groups + i
+                if chunk_id < n_chunks:
+                    offset = chunk_id * chunksize
+                    f.seek(offset)
+                    f.write(buf)
+            # To issue at most n_outstanding_requests
+            os.fsync(f)
+
+# NOTE: Class name SequentialWrite_{n}KB_{m}, means chunksize is 'n' KB, and
+# n_outstanding_requests are 'm'
+# The maximum number of n_outstanding_requests supported by the SSD is 32
+class SequentialWrite_2KB_8(SequentialWriteBaseClass):
+    def __init__(self, confobj, workload_conf_key=None):
+        super(SequentialWrite_2KB_8, self).__init__(
+            confobj=confobj,
+            chunksize=2*KB,
+            n_outstanding_requests=8,
+            workload_conf_key=None
+        )
+
+class SequentialWrite_2KB_16(SequentialWriteBaseClass):
+    def __init__(self, confobj, workload_conf_key=None):
+        super(SequentialWrite_2KB_16, self).__init__(
+            confobj=confobj,
+            chunksize=2*KB,
+            n_outstanding_requests=16,
+            workload_conf_key=None
+        )
+
+class SequentialWrite_2KB_32(SequentialWriteBaseClass):
+    def __init__(self, confobj, workload_conf_key=None):
+        super(SequentialWrite_2KB_32, self).__init__(
+            confobj=confobj,
+            chunksize=2*KB,
+            n_outstanding_requests=32,
+            workload_conf_key=None
+        )
+
+class SequentialWrite_4KB_4(SequentialWriteBaseClass):
+    def __init__(self, confobj, workload_conf_key=None):
+        super(SequentialWrite_4KB_4, self).__init__(
+            confobj=confobj,
+            chunksize=4*KB,
+            n_outstanding_requests=4,
+            workload_conf_key=None
+        )
+
+class SequentialWrite_4KB_8(SequentialWriteBaseClass):
+    def __init__(self, confobj, workload_conf_key=None):
+        super(SequentialWrite_4KB_8, self).__init__(
+            confobj=confobj,
+            chunksize=4*KB,
+            n_outstanding_requests=8,
+            workload_conf_key=None
+        )
+
+class SequentialWrite_4KB_16(SequentialWriteBaseClass):
+    def __init__(self, confobj, workload_conf_key=None):
+        super(SequentialWrite_4KB_16, self).__init__(
+            confobj=confobj,
+            chunksize=4*KB,
+            n_outstanding_requests=16,
+            workload_conf_key=None
+        )
+
+class SequentialWrite_4KB_32(SequentialWriteBaseClass):
+    def __init__(self, confobj, workload_conf_key=None):
+        super(SequentialWrite_4KB_32, self).__init__(
+            confobj=confobj,
+            chunksize=4*KB,
+            n_outstanding_requests=32,
+            workload_conf_key=None
+        )
+
+class SequentialWrite_8KB_4(SequentialWriteBaseClass):
+    def __init__(self, confobj, workload_conf_key=None):
+        super(SequentialWrite_8KB_4, self).__init__(
+            confobj=confobj,
+            chunksize=8*KB,
+            n_outstanding_requests=4,
+            workload_conf_key=None
+        )
+
+class SequentialWrite_8KB_8(SequentialWriteBaseClass):
+    def __init__(self, confobj, workload_conf_key=None):
+        super(SequentialWrite_8KB_8, self).__init__(
+            confobj=confobj,
+            chunksize=8*KB,
+            n_outstanding_requests=8,
+            workload_conf_key=None
+        )
+
+class SequentialWrite_8KB_16(SequentialWriteBaseClass):
+    def __init__(self, confobj, workload_conf_key=None):
+        super(SequentialWrite_8KB_16, self).__init__(
+            confobj=confobj,
+            chunksize=8*KB,
+            n_outstanding_requests=16,
+            workload_conf_key=None
+        )
+
+class SequentialWrite_8KB_32(SequentialWriteBaseClass):
+    def __init__(self, confobj, workload_conf_key=None):
+        super(SequentialWrite_8KB_32, self).__init__(
+            confobj=confobj,
+            chunksize=8*KB,
+            n_outstanding_requests=32,
+            workload_conf_key=None
+        )
+
+class SequentialWrite_16KB_4(SequentialWriteBaseClass):
+    def __init__(self, confobj, workload_conf_key=None):
+        super(SequentialWrite_16KB_4, self).__init__(
+            confobj=confobj,
+            chunksize=16*KB,
+            n_outstanding_requests=4,
+            workload_conf_key=None
+        )
+
+class SequentialWrite_16KB_8(SequentialWriteBaseClass):
+    def __init__(self, confobj, workload_conf_key=None):
+        super(SequentialWrite_16KB_8, self).__init__(
+            confobj=confobj,
+            chunksize=16*KB,
+            n_outstanding_requests=8,
+            workload_conf_key=None
+        )
+
+class SequentialWrite_16KB_16(SequentialWriteBaseClass):
+    def __init__(self, confobj, workload_conf_key=None):
+        super(SequentialWrite_16KB_16, self).__init__(
+            confobj=confobj,
+            chunksize=16*KB,
+            n_outstanding_requests=16,
+            workload_conf_key=None
+        )
+
+class SequentialWrite_16KB_32(SequentialWriteBaseClass):
+    def __init__(self, confobj, workload_conf_key=None):
+        super(SequentialWrite_16KB_32, self).__init__(
+            confobj=confobj,
+            chunksize=16*KB,
+            n_outstanding_requests=32,
+            workload_conf_key=None
+        )
