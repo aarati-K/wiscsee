@@ -798,5 +798,135 @@ class TestAlignment_100(unittest.TestCase):
             ):
             experiment.execute_simulation(para)
 
+############################################
+## Test Locality
+############################################
+
+# We compare the behaviour of three workloads:
+# 1) Write sequentially, followed by reading data in the forward order
+# 2) Write sequentially, followed by reading in the reverse order
+# 3) Write randomly, and read randomly
+#
+# We expect workload 2 to exhibit the minimum miss ratio. However, we expect that
+# workload 1 will be quite close to workload 2. Workload 3, because its random
+# accesses, should exhibit the maximum miss ratio.
+
+class GenerateSeqWriteFwdReadTrace(unittest.TestCase):
+    def test_run(self):
+        class LocalExperiment(experiment.Experiment):
+            def setup_workload(self):
+                self.conf['workload_class'] = "SequentialWriteForwardRead"
+
+        para = experiment.get_shared_nolist_para_dict(
+            expname="test_seq_write_fwd_read_trace",
+            lbabytes=16*MB
+        )
+        para.update({
+            'device_path': "/dev/sdc3",
+            'ftl' : 'ftlcounter',
+            'enable_simulation': True,
+            'dump_ext4_after_workload': True,
+            'only_get_traffic': False,
+            'trace_issue_and_complete': True,
+        })
+
+        Parameters = collections.namedtuple("Parameters", ','.join(para.keys()))
+        obj = LocalExperiment(Parameters(**para))
+        obj.main()
+
+class TestSeqWriteFwdReadLocality(unittest.TestCase):
+    def test(self):
+        for para in rule_parameter.ParaDict(
+            expname="test_seq_write_fwd_read",
+            trace_expnames=["test_seq_write_fwd_read_trace"],
+            rule="locality"
+        ):
+            experiment.execute_simulation(para)
+
+        for para in rule_parameter.ParaDict(
+            expname="test_seq_write_fwd_read",
+            trace_expnames=["test_seq_write_fwd_read_trace"],
+            rule="localitysmall"
+        ):
+            experiment.execute_simulation(para)
+
+class GenerateSeqWriteBckReadTrace(unittest.TestCase):
+    def test_run(self):
+        class LocalExperiment(experiment.Experiment):
+            def setup_workload(self):
+                self.conf['workload_class'] = "SequentialWriteBackwardRead"
+
+        para = experiment.get_shared_nolist_para_dict(
+            expname="test_seq_write_bck_read_trace",
+            lbabytes=16*MB
+        )
+        para.update({
+            'device_path': "/dev/sdc3",
+            'ftl' : 'ftlcounter',
+            'enable_simulation': True,
+            'dump_ext4_after_workload': True,
+            'only_get_traffic': False,
+            'trace_issue_and_complete': True,
+        })
+
+        Parameters = collections.namedtuple("Parameters", ','.join(para.keys()))
+        obj = LocalExperiment(Parameters(**para))
+        obj.main()
+
+class TestSeqWriteBckReadLocality(unittest.TestCase):
+    def test(self):
+        for para in rule_parameter.ParaDict(
+            expname="test_seq_write_bck_read",
+            trace_expnames=["test_seq_write_bck_read_trace"],
+            rule="locality"
+        ):
+            experiment.execute_simulation(para)
+
+        for para in rule_parameter.ParaDict(
+            expname="test_seq_write_bck_read",
+            trace_expnames=["test_seq_write_bck_read_trace"],
+            rule="localitysmall"
+        ):
+            experiment.execute_simulation(para)
+
+class GenerateRandWriteRandReadTrace(unittest.TestCase):
+    def test_run(self):
+        class LocalExperiment(experiment.Experiment):
+            def setup_workload(self):
+                self.conf['workload_class'] = "RandomWriteRandomRead"
+
+        para = experiment.get_shared_nolist_para_dict(
+            expname="test_rand_write_rand_read_trace",
+            lbabytes=16*MB
+        )
+        para.update({
+            'device_path': "/dev/sdc3",
+            'ftl' : 'ftlcounter',
+            'enable_simulation': True,
+            'dump_ext4_after_workload': True,
+            'only_get_traffic': False,
+            'trace_issue_and_complete': True,
+        })
+
+        Parameters = collections.namedtuple("Parameters", ','.join(para.keys()))
+        obj = LocalExperiment(Parameters(**para))
+        obj.main()
+
+class TestRandWriteRandReadLocality(unittest.TestCase):
+    def test(self):
+        for para in rule_parameter.ParaDict(
+            expname="test_rand_write_rand_read",
+            trace_expnames=["test_rand_write_rand_read_trace"],
+            rule="locality"
+        ):
+            experiment.execute_simulation(para)
+
+        for para in rule_parameter.ParaDict(
+            expname="test_rand_write_rand_read",
+            trace_expnames=["test_rand_write_rand_read_trace"],
+            rule="localitysmall"
+        ):
+            experiment.execute_simulation(para)
+
 if __name__ == '__main__':
     unittest.main()

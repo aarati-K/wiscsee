@@ -157,6 +157,8 @@ class MeasureRequestScaleBaseClass(Workload):
             # To issue at most n_outstanding_requests
             os.fsync(f)
 
+        f.close()
+
 # NOTE: Class name MeasureRequestScale_{n}KB_{m}, means chunksize is 'n' KB, and
 # n_outstanding_requests are 'm'
 # The maximum number of n_outstanding_requests supported by the SSD is 32
@@ -332,6 +334,8 @@ class RandomWrite(Workload):
                 f.write(buf)
                 os.fsync(f)
 
+            f.close()
+
 class MeasureAlignmentBaseClass(Workload):
     def __init__(
         self,
@@ -384,6 +388,8 @@ class MeasureAlignmentBaseClass(Workload):
                 f.write(buf)
                 os.fsync(f)
 
+        f.close()
+
 # Note: Class name MeasureAlignment_{n} means n% of the block writes are aligned
 class MeasureAlignment_0(MeasureAlignmentBaseClass):
     def __init__(self, confobj, workload_conf_key=None):
@@ -432,3 +438,116 @@ class MeasureAlignment_100(MeasureAlignmentBaseClass):
             aligned_ratio=1,
             workload_conf_key=workload_conf_key,
         )
+
+############################################
+## Test Locality
+############################################
+
+# We compare the behaviour of three workloads:
+# 1) Write sequentially, followed by reading data in the forward order
+# 2) Write sequentially, followed by reading in the reverse order
+# 3) Write randomly, and read randomly
+#
+# We expect workload 2 to exhibit the minimum miss ratio. However, we expect that
+# workload 1 will be quite close to workload 2. Workload 3, because its random
+# accesses, should exhibit the maximum miss ratio.
+
+class SequentialWriteForwardRead(Workload):
+    def __init__(self, confobj, workload_conf_key=None):
+        super(SequentialWriteForwardRead, self).__init__(
+            confobj, workload_conf_key
+        )
+
+    def run(self):
+        mnt = self.conf['fs_mount_point']
+        datafile = os.path.join(mnt, "datafile_seq_write_fwd_read")
+        f = open(datafile, "w+")
+
+        file_size = 2*MB
+        chunk_size = 8*KB
+        n_chunks = file_size/chunk_size
+        chunk_ids = range(n_chunks)
+
+        buf = "a"*chunk_size
+        # Write sequentially
+        for i in chunk_ids:
+            offset = i*chunk_size
+            f.seek(offset)
+            f.write(buf)
+            os.fsync(f)
+
+        # Read sequentially forward
+        for i in chunk_ids:
+            offset = i*chunk_size
+            f.seek(offset)
+            buf = f.read()
+            os.fsync(f)
+
+        f.close()
+
+class SequentialWriteBackwardRead(Workload):
+    def __init__(self, confobj, workload_conf_key=None):
+        super(SequentialWriteBackwardRead, self).__init__(
+            confobj, workload_conf_key
+        )
+
+    def run(self):
+        mnt = self.conf['fs_mount_point']
+        datafile = os.path.join(mnt, "datafile_seq_write_bck_read")
+        f = open(datafile, "w+")
+
+        file_size = 2*MB
+        chunk_size = 8*KB
+        n_chunks = file_size/chunk_size
+        chunk_ids = range(n_chunks)
+
+        buf = "a"*chunk_size
+        # Write sequentially
+        for i in chunk_ids:
+            offset = i*chunk_size
+            f.seek(offset)
+            f.write(buf)
+            os.fsync(f)
+
+        # Read sequentially backward
+        chunk_ids.reverse()
+        for i in chunk_ids:
+            offset = i*chunk_size
+            f.seek(offset)
+            buf = f.read()
+            os.fsync(f)
+
+        f.close()
+
+class RandomWriteRandomRead(Workload):
+    def __init__(self, confobj, workload_conf_key=None):
+        super(RandomWriteRandomRead, self).__init__(confobj, workload_conf_key)
+
+    def run(self):
+        mnt = self.conf['fs_mount_point']
+        datafile = os.path.join(mnt, "datafile_rand_write_rand_read")
+        f = open(datafile, "w+")
+
+        file_size = 2*MB
+        chunk_size = 8*KB
+        n_chunks = file_size/chunk_size
+        chunk_ids = range(n_chunks)
+
+        buf = "a"*chunk_size
+        # Write randomly
+        random.shuffle(chunk_ids)
+        for i in chunk_ids:
+            offset = i*chunk_size
+            f.seek(offset)
+            f.write(buf)
+            os.fsync(f)
+
+        # Read randomly
+        random.shuffle(chunk_ids)
+        for i in chunk_ids:
+            offset = i*chunk_size
+            f.seek(offset)
+            buf = f.read()
+            os.fsync(f)
+
+        f.close()
