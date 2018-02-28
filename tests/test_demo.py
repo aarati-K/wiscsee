@@ -928,5 +928,73 @@ class TestRandWriteRandReadLocality(unittest.TestCase):
         ):
             experiment.execute_simulation(para)
 
+############################################
+## Test Grouping by Death Time - Attempt 1
+############################################
+
+class GenerateGroupingWorkloadTrace(unittest.TestCase):
+    def test_run(self):
+        class LocalExperiment(experiment.Experiment):
+            def setup_workload(self):
+                self.conf['workload_class'] = "GroupingWorkload"
+
+        para = experiment.get_shared_nolist_para_dict(
+            expname="test_grouping_workload_trace",
+            lbabytes=16*MB
+        )
+        para.update({
+            'device_path': "/dev/sdc1",
+            'ftl' : 'ftlcounter',
+            'enable_simulation': True,
+            'dump_ext4_after_workload': True,
+            'only_get_traffic': False,
+            'trace_issue_and_complete': True,
+        })
+
+        Parameters = collections.namedtuple("Parameters", ','.join(para.keys()))
+        obj = LocalExperiment(Parameters(**para))
+        obj.main()
+
+class TestGroupingWorkload(unittest.TestCase):
+    def test(self):
+        for para in rule_parameter.ParaDict(
+            expname="test_grouping_workload",
+            trace_expnames=["test_grouping_workload_trace"],
+            rule="grouping"
+        ):
+            experiment.execute_simulation(para)
+
+class GenerateNonGroupingWorkloadTrace(unittest.TestCase):
+    def test_run(self):
+        class LocalExperiment(experiment.Experiment):
+            def setup_workload(self):
+                self.conf['workload_class'] = "NonGroupingWorkload"
+
+        para = experiment.get_shared_nolist_para_dict(
+            expname="test_non_grouping_workload_trace",
+            lbabytes=16*MB
+        )
+        para.update({
+            'device_path': "/dev/sdc2",
+            'ftl' : 'ftlcounter',
+            'enable_simulation': True,
+            'dump_ext4_after_workload': True,
+            'only_get_traffic': False,
+            'trace_issue_and_complete': True,
+        })
+
+        Parameters = collections.namedtuple("Parameters", ','.join(para.keys()))
+        obj = LocalExperiment(Parameters(**para))
+        obj.main()
+
+class TestNonGroupingWorkload(unittest.TestCase):
+    def test(self):
+        for para in rule_parameter.ParaDict(
+            expname="test_non_grouping_workload",
+            trace_expnames=["test_non_grouping_workload_trace"],
+            rule="grouping"
+        ):
+            experiment.execute_simulation(para)
+
 if __name__ == '__main__':
     unittest.main()
