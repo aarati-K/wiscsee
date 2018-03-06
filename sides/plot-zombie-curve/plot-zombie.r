@@ -4,7 +4,8 @@ require("reshape2")
 require("plyr")
 
 GB = 2^30
-blocksize = 2^20
+MB = 2^20
+blocksize = 128*2^10
 
 load_data <- function(file_path) {
     json_data = fromJSON(txt=file_path)
@@ -31,7 +32,7 @@ organize_data <- function(d) {
          measure = c('seg_start', 'seg_end'), value.name = 'blocknum')
     d = arrange(d, desc(valid_ratio))
 
-    d = transform(d, block_location = (as.numeric(blocknum)/GB) * as.numeric(blocksize))
+    d = transform(d, block_location = (as.numeric(blocknum)/(16*MB)) * as.numeric(blocksize))
     d = subset(d, valid_ratio != 0)
 
     return(d)
@@ -41,7 +42,7 @@ plot <- function(d) {
     p = ggplot(d, aes(x = block_location, y = valid_ratio)) +
         geom_line() +
         ylab('Valid Ratio') +
-        xlab('Cumulative Block Size (GB)')
+        xlab('Cumulative Block Ratio')
     print(p)
 
     ggsave("plot.pdf", plot = p, height = 4, width = 4)

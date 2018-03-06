@@ -675,3 +675,130 @@ class NonGroupingWorkload(Workload):
 
         # Close the file
         f.close()
+
+
+############################################
+## Test Grouping by Death Time - Attempt 2
+############################################
+
+# The page size is 2KB and there are 64 pages per block.
+#
+# We want to demonstrate two different workloads. Both the workloads write to
+# files of size 2MB (1024 pages). 1/8 (128 pages) of this file is
+# frequently written to. The remaining pages are less frequently written to.
+# 
+# In each iteration, the workload writes two blocks (128 pages).
+#
+# Workload 1 groups the writes to frequent pages in one block, and the writes to
+# infrequent pages in a different block.
+#
+# Workload 2 mixes up the writes to both sets of pages. It does not group them
+# by death time.
+
+class GroupingWorkloadNew(Workload):
+    def __init__(self, confobj, workload_conf_key=None):
+        super(GroupingWorkloadNew, self).__init__(confobj, workload_conf_key)
+
+    def run(self):
+        mnt = self.conf['fs_mount_point']
+        datafile = os.path.join(mnt, "datafile_grouping_workload")
+        f = open(datafile, "w+")
+
+
+        page_size = 2*KB
+        block_size = 128*KB
+        n_pages_per_block = block_size/page_size # 64
+
+        file_size = 2*MB
+        n_pages = file_size/page_size # 1024
+
+        frequent_write_page_count = n_pages/8 # 128
+        frequent_write_page_ids = range(frequent_write_page_count) # [0.. 127]
+        infrequent_write_page_ids = range(frequent_write_page_count, n_pages)
+                                                            # [128 ... 1023]
+
+        # First write the whole file sequentially
+        buf = "a"*page_size
+        for i in range(n_pages):
+            offset = i*page_size
+            f.seek(offset)
+            f.write(buf)
+
+        # Sync the file
+        os.fsync(f)
+
+        # We have multiple iterations of writes. In every iteration, 
+        # n_pages_per_block number of pages are written from each set
+        for i in range(5000):
+            random.shuffle(frequent_write_page_ids)
+            for page_id in frequent_write_page_ids[0:n_pages_per_block]:
+                offset = page_id * page_size
+                f.seek(offset)
+                f.write(buf)
+
+            os.fsync(f)
+
+            random.shuffle(infrequent_write_page_ids)
+            for page_id in infrequent_write_page_ids[0:n_pages_per_block]:
+                offset = page_id * page_size
+                f.seek(offset)
+                f.write(buf)
+
+            os.fsync(f)
+
+        f.close()
+
+
+class NonGroupingWorkloadNew(Workload):
+    def __init__(self, confobj, workload_conf_key=None):
+        super(NonGroupingWorkloadNew, self).__init__(confobj, workload_conf_key)
+
+    def run(self):
+        mnt = self.conf['fs_mount_point']
+        datafile = os.path.join(mnt, "datafile_grouping_workload")
+        f = open(datafile, "w+")
+
+
+        page_size = 2*KB
+        block_size = 128*KB
+        n_pages_per_block = block_size/page_size
+
+        file_size = 2*MB
+        n_pages = file_size/page_size # 1024
+
+        frequent_write_page_count = n_pages/8
+        frequent_write_page_ids = range(frequent_write_page_count)
+        infrequent_write_page_ids = range(frequent_write_page_count, n_pages)
+
+        # First write the whole file sequentially
+        buf = "a"*page_size
+        for i in range(n_pages):
+            offset = i*page_size
+            f.seek(offset)
+            f.write(buf)
+
+        # Sync the file
+        os.fsync(f)
+
+        # We have multiple iterations of writes. In every iteration, 50% of the
+        # frequently written pages, and 10% of infrequently written pages are
+        # overwritten.
+        for i in range(5000):
+            random.shuffle(frequent_write_page_ids)
+            random.shuffle(infrequent_write_page_ids)
+
+            write_to_page_ids = frequent_write_page_ids[0:n_pages_per_block] + \
+                infrequent_write_page_ids[0:n_pages_per_block]
+
+            # Do not group
+            random.shuffle(write_to_page_ids)
+            for page_id in write_to_page_ids:
+                offset = page_id * page_size
+                f.seek(offset)
+                f.write(buf)
+
+             # Sync file on each iteration
+            os.fsync(f)
+
+        # Close the file
+        f.close()
